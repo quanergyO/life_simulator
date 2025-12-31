@@ -39,8 +39,9 @@ impl Person {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Default)]
 pub enum Frequency {
+    #[default]
     Yearly,
     Monthly,
     Daily,
