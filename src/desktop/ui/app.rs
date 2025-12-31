@@ -4,18 +4,9 @@ use crate::desktop::ui::components::{
     expenses_component::ExpensesComponent,
     incomes_component::IncomesComponent,
     simulation_component::SimulationComponent,
+    settings_component::SettingsComponent,
     shared_state::{SharedState, AppTab},
 };
-
-// Define scaling factors
-const SCALING_FACTORS: [(f32, &str); 6] = [
-    (0.5, "50%"),   // 50%
-    (0.75, "75%"),  // 75%
-    (1.0, "100%"),  // 100%
-    (1.25, "125%"), // 125%
-    (1.5, "150%"),  // 150%
-    (2.0, "200%"),  // 200%
-];
 
 pub struct LifeSimulatorApp {
     state: SharedState,
@@ -23,6 +14,7 @@ pub struct LifeSimulatorApp {
     expenses_component: ExpensesComponent,
     incomes_component: IncomesComponent,
     simulation_component: SimulationComponent,
+    settings_component: SettingsComponent,
 }
 
 impl LifeSimulatorApp {
@@ -37,14 +29,15 @@ impl LifeSimulatorApp {
             expenses_component: ExpensesComponent::new(),
             incomes_component: IncomesComponent::new(),
             simulation_component: SimulationComponent::new(),
+            settings_component: SettingsComponent::new(),
         }
     }
 }
 
 impl eframe::App for LifeSimulatorApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        // Apply scaling
-        ctx.set_zoom_factor(self.state.current_scale);
+        // Apply scaling from settings component
+        ctx.set_zoom_factor(self.settings_component.get_scale());
 
         egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
             ui.horizontal(|ui| {
@@ -55,13 +48,10 @@ impl eframe::App for LifeSimulatorApp {
 
                 ui.separator();
 
-                // Scaling controls
-                ui.label("Scale:");
-                for (scale_factor, label) in SCALING_FACTORS.iter() {
-                    if ui.selectable_label(self.state.current_scale == *scale_factor, *label).clicked() {
-                        self.state.current_scale = *scale_factor;
-                    }
-                }
+                // Use settings component with dropdown button
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    self.settings_component.show_settings_button(ui);
+                });
             });
         });
 

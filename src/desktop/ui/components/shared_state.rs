@@ -13,7 +13,6 @@ pub enum AppTab {
 pub struct SharedState {
     pub simulator: Option<LifeSimulator>,
     pub current_tab: AppTab,
-    pub current_scale: f32,
 }
 
 impl SharedState {
@@ -21,7 +20,6 @@ impl SharedState {
         Self {
             simulator: None,
             current_tab: AppTab::default(),
-            current_scale: 1.0, // Default to 100% scale
         }
     }
 }
