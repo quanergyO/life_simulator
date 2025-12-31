@@ -1,16 +1,21 @@
 use eframe::egui;
-use crate::domain::{Person, Expense, ExpenseFrequency, LifeSimulator};
+use crate::domain::{Expense, Frequency, LifeSimulator, Person, person::Income};
 
 pub struct LifeSimulatorApp {
     simulator: Option<LifeSimulator>,
     name: String,
     age: String,
-    income: String,
+    start_capital: String,
     expense_name: String,
     expense_amount: String,
-    expense_frequency: ExpenseFrequency,
+    expense_frequency: Frequency,
     expense_start_age: String,
     expense_end_age: String,
+    income_name: String,
+    income_amount: String,
+    income_frequency: Frequency,
+    income_start_age: String,
+    income_end_age: String,
     target_age: String,
     current_tab: AppTab,
 }
@@ -20,6 +25,7 @@ enum AppTab {
     #[default]
     Setup,
     Expenses,
+    Incomes,
     Simulation,
 }
 
@@ -33,19 +39,24 @@ impl LifeSimulatorApp {
             simulator: None,
             name: String::new(),
             age: String::new(),
-            income: String::new(),
+            start_capital: String::new(),
             expense_name: String::new(),
             expense_amount: String::new(),
-            expense_frequency: ExpenseFrequency::Yearly,
+            expense_frequency: Frequency::Yearly,
             expense_start_age: String::new(),
             expense_end_age: String::new(),
+            income_name: String::new(),
+            income_amount: String::new(),
+            income_frequency: Frequency::Yearly,
+            income_start_age: String::new(),
+            income_end_age: String::new(),
             target_age: String::new(),
             current_tab: AppTab::default(),
         }
     }
 
     fn create_person(&mut self) {
-        if let (Ok(age_val), Ok(income_val)) = (self.age.parse::<u32>(), self.income.parse::<f64>()) {
+        if let (Ok(age_val), Ok(income_val)) = (self.age.parse::<u32>(), self.start_capital.parse::<f64>()) {
             let person = Person::new(self.name.clone(), age_val, income_val);
             self.simulator = Some(LifeSimulator::new(person));
         }
@@ -81,6 +92,35 @@ impl LifeSimulatorApp {
         }
     }
 
+    fn add_income(&mut self) {
+        if let Some(ref mut simulator) = self.simulator {
+            if let (Ok(amount_val), Ok(start_age_val)) = 
+            (self.income_amount.parse::<f64>(), self.income_start_age.parse::<u32>()) {
+
+                let end_age = if !self.income_end_age.is_empty() {
+                    self.income_end_age.parse::<u32>().ok()
+                } else {
+                    None
+                };
+
+                let income = Income::new(
+                    self.income_name.clone(),
+                    amount_val,
+                    self.income_frequency.clone(),
+                    start_age_val,
+                    end_age,
+                );
+
+                simulator.add_income(income);
+
+                self.income_name.clear();
+                self.income_amount.clear();
+                self.income_start_age.clear();
+                self.income_end_age.clear();
+            };
+        }
+    }
+
     fn calculate_balance(&mut self) -> Option<f64> {
         if let (Some(ref mut simulator), Ok(target_age_val)) = (self.simulator.as_mut(), self.target_age.parse::<u32>()) {
             Some(simulator.calculate_balance_at_age(target_age_val))
@@ -96,6 +136,7 @@ impl eframe::App for LifeSimulatorApp {
             ui.horizontal(|ui| {
                 ui.selectable_value(&mut self.current_tab, AppTab::Setup, "Setup");
                 ui.selectable_value(&mut self.current_tab, AppTab::Expenses, "Expenses");
+                ui.selectable_value(&mut self.current_tab, AppTab::Incomes, "Incomes");
                 ui.selectable_value(&mut self.current_tab, AppTab::Simulation, "Simulation");
             });
         });
@@ -116,8 +157,8 @@ impl eframe::App for LifeSimulatorApp {
                     });
                     
                     ui.horizontal(|ui| {
-                        ui.label("Annual Income:");
-                        ui.text_edit_singleline(&mut self.income);
+                        ui.label("Current Capital:");
+                        ui.text_edit_singleline(&mut self.start_capital);
                     });
                     
                     if ui.button("Create Person").clicked() {
@@ -127,9 +168,9 @@ impl eframe::App for LifeSimulatorApp {
                     if let Some(simulator) = &self.simulator {
                         let person = simulator.get_person();
                         ui.separator();
-                        ui.label(format!("Current Person: {}, Age: {}, Income: ${:.2}", 
-                                         person.name, person.age, person.current_income));
-                        ui.label(format!("Current Balance: ${:.2}", person.get_current_balance()));
+                        ui.label(format!("Current Person: {}, Age: {}, Capital: {:.2}", 
+                                         person.name, person.age, person.capital));
+                        ui.label(format!("Current Balance: {:.2}", person.get_current_balance()));
                     }
                 },
                 
@@ -153,9 +194,9 @@ impl eframe::App for LifeSimulatorApp {
                     
                     ui.horizontal(|ui| {
                         ui.label("Frequency:");
-                        ui.radio_value(&mut self.expense_frequency, ExpenseFrequency::Yearly, "Yearly");
-                        ui.radio_value(&mut self.expense_frequency, ExpenseFrequency::Monthly, "Monthly");
-                        ui.radio_value(&mut self.expense_frequency, ExpenseFrequency::Daily, "Daily");
+                        ui.radio_value(&mut self.expense_frequency, Frequency::Yearly, "Yearly");
+                        ui.radio_value(&mut self.expense_frequency, Frequency::Monthly, "Monthly");
+                        ui.radio_value(&mut self.expense_frequency, Frequency::Daily, "Daily");
                     });
                     
                     ui.horizontal(|ui| {
@@ -177,7 +218,7 @@ impl eframe::App for LifeSimulatorApp {
                         ui.separator();
                         ui.heading("Current Expenses:");
                         for (i, expense) in simulator.get_person().expenses.iter().enumerate() {
-                            ui.label(format!("{}. {}: ${:.2} ({:?}) - Age {} to {}", 
+                            ui.label(format!("{}. {}: {:.2} ({:?}) - Age {} to {}", 
                                            i + 1, 
                                            expense.name, 
                                            expense.amount, 
@@ -187,6 +228,58 @@ impl eframe::App for LifeSimulatorApp {
                         }
                     }
                 },
+
+                AppTab::Incomes => {
+                    if self.simulator.is_none() {
+                        ui.label("Please create a person first in the Setup tab.");
+                        return;
+                    }
+                    
+                    ui.horizontal(|ui| {
+                        ui.label("Incomes Name:");
+                        ui.text_edit_singleline(&mut self.income_name);
+                    });
+                    
+                    ui.horizontal(|ui| {
+                        ui.label("Amount per period:");
+                        ui.text_edit_singleline(&mut self.income_amount);
+                    });
+
+                    ui.horizontal(|ui| {
+                        ui.label("Frequency:");
+                        ui.radio_value(&mut self.income_frequency, Frequency::Yearly, "Yearly");
+                        ui.radio_value(&mut self.income_frequency, Frequency::Monthly, "Monthly");
+                        ui.radio_value(&mut self.income_frequency, Frequency::Daily, "Daily");
+                    });
+
+                                        ui.horizontal(|ui| {
+                        ui.label("Start Age:");
+                        ui.text_edit_singleline(&mut self.income_start_age);
+                    });
+                    
+                    ui.horizontal(|ui| {
+                        ui.label("End Age (optional):");
+                        ui.text_edit_singleline(&mut self.income_end_age);
+                    });
+                    
+                    if ui.button("Add Incomes").clicked() {
+                        self.add_income();
+                    }
+
+                    if let Some(simulator) = &self.simulator {
+                        ui.separator();
+                        ui.heading("Current Incomes:");
+                        for (i, income) in simulator.get_person().incomes.iter().enumerate() {
+                            ui.label(format!("{}. {}: {:.2} ({:?}) - Age {} to {}", 
+                                           i + 1, 
+                                           income.name, 
+                                           income.amount, 
+                                           income.frequency, 
+                                           income.start_age,
+                                           income.end_age.map_or("ongoing".to_string(), |age| age.to_string())));
+                        }
+                    }
+                }
                 
                 AppTab::Simulation => {
                     ui.heading("Simulation");
@@ -203,7 +296,7 @@ impl eframe::App for LifeSimulatorApp {
                     
                     if ui.button("Calculate Balance").clicked() {
                         if let Some(balance) = self.calculate_balance() {
-                            ui.label(format!("Projected balance: ${:.2}", balance));
+                            ui.label(format!("Projected balance: {:.2}", balance));
                         }
                     }
                     
@@ -232,7 +325,7 @@ impl eframe::App for LifeSimulatorApp {
                                 .view_aspect(2.0)
                                 .show_x(true)
                                 .show_y(true)
-                                .label_formatter(|name, value| format!("{}: ({:.0}, ${:.2})", name, value.x, value.y))
+                                .label_formatter(|name, value| format!("{}: ({:.0}, {:.2})", name, value.x, value.y))
                                 .show(ui, |plot_ui| {
                                     plot_ui.line(line);
                                 });
@@ -247,7 +340,7 @@ impl eframe::App for LifeSimulatorApp {
                                     for age in &ages {
                                         let balance = history.get(age).unwrap();
                                         columns[0].label(age.to_string());
-                                        columns[1].label(format!("${:.2}", balance));
+                                        columns[1].label(format!("{:.2}", balance));
                                     }
                                 });
                             });
@@ -264,7 +357,7 @@ impl eframe::App for LifeSimulatorApp {
 pub fn run_gui() {
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
-            .with_inner_size(egui::Vec2::new(800.0, 600.0)),
+            .with_inner_size(egui::Vec2::new(1600.0, 900.0)),
         ..Default::default()
     };
     

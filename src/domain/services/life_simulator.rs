@@ -1,4 +1,4 @@
-use crate::domain::entities::person::{Person, Expense, ExpenseFrequency};
+use crate::domain::{entities::person::{Expense, Frequency, Person}, person::Income};
 
 pub struct LifeSimulator {
     person: Person,
@@ -11,6 +11,10 @@ impl LifeSimulator {
 
     pub fn add_expense(&mut self, expense: Expense) {
         self.person.add_expense(expense);
+    }
+
+    pub fn add_income(&mut self, income: Income) {
+        self.person.add_income(income);
     }
 
     pub fn calculate_balance_at_age(&mut self, target_age: u32) -> f64 {
@@ -62,6 +66,7 @@ impl LifeSimulator {
 
     fn calculate_balance_for_year(&self, current_age: u32, current_balance: f64) -> f64 {
         let mut yearly_expenses = 0.0;
+        let mut yearly_incomes = 0.0;
 
         for expense in &self.person.expenses {
             if current_age >= expense.start_age {
@@ -72,18 +77,36 @@ impl LifeSimulator {
                 }
 
                 // Calculate yearly expense based on frequency
-                let yearly_amount = match expense.frequency {
-                    ExpenseFrequency::Yearly => expense.amount,
-                    ExpenseFrequency::Monthly => expense.amount * 12.0,
-                    ExpenseFrequency::Daily => expense.amount * 365.0,
+                let yearly_expense_amount = match expense.frequency {
+                    Frequency::Yearly => expense.amount,
+                    Frequency::Monthly => expense.amount * 12.0,
+                    Frequency::Daily => expense.amount * 365.0,
                 };
 
-                yearly_expenses += yearly_amount;
+                yearly_expenses += yearly_expense_amount;
             }
         }
 
+        for income in &self.person.incomes {
+            if current_age >= income.start_age {
+                if let Some(end_age) = income.end_age {
+                    if current_age >= end_age {
+                        continue; // Expense has ended
+                    }
+                }
+            }
+
+            let yearly_income_amount = match income.frequency {
+                Frequency::Yearly => income.amount,
+                Frequency::Monthly => income.amount * 12.0,
+                Frequency::Daily => income.amount * 365.0,
+            };
+
+            yearly_incomes += yearly_income_amount;
+        }
+
         // Add income for the year and subtract expenses
-        current_balance + self.person.current_income - yearly_expenses
+        current_balance - yearly_expenses + yearly_incomes
     }
 
     pub fn get_person(&self) -> &Person {
