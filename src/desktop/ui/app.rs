@@ -21,7 +21,10 @@ impl LifeSimulatorApp {
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
         // Customize the appearance
         egui::Style::default();
-        cc.egui_ctx.set_visuals(egui::Visuals::dark());
+
+        let mut settings_component = SettingsComponent::new();
+        // Apply the initial theme
+        settings_component.set_theme(settings_component.get_theme().clone(), &cc.egui_ctx);
 
         Self {
             state: SharedState::new(),
@@ -29,7 +32,7 @@ impl LifeSimulatorApp {
             expenses_component: ExpensesComponent::new(),
             incomes_component: IncomesComponent::new(),
             simulation_component: SimulationComponent::new(),
-            settings_component: SettingsComponent::new(),
+            settings_component,
         }
     }
 }
@@ -50,7 +53,7 @@ impl eframe::App for LifeSimulatorApp {
 
                 // Use settings component with dropdown button
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                    self.settings_component.show_settings_button(ui);
+                    self.settings_component.show_settings_button(ui, ctx);
                 });
             });
         });

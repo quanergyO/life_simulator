@@ -1,5 +1,5 @@
 use eframe::egui;
-use egui_plot::{Line, PlotPoints, Plot};
+use egui_plot::{Line, PlotPoints, Plot, Legend, VLine};
 use crate::desktop::ui::components::shared_state::SharedState;
 
 pub struct SimulationComponent {
@@ -59,14 +59,29 @@ impl SimulationComponent {
 
                 let line = Line::new(points).name("Balance over time");
 
-                Plot::new("balance_plot")
-                    .view_aspect(2.0)
-                    .show_x(true)
-                    .show_y(true)
-                    .label_formatter(|name, value| format!("{}: ({:.0}, {:.2})", name, value.x, value.y))
-                    .show(ui, |plot_ui| {
-                        plot_ui.line(line);
-                    });
+                // Create a scroll area for the plot to allow proper sizing
+                egui::ScrollArea::both().show(ui, |ui| {
+                    ui.set_height(400.0); // Set a reasonable default height
+
+                    Plot::new("balance_plot")
+                        .legend(Legend::default())
+                        .view_aspect(3.0)  // Wider aspect ratio
+                        .show_x(true)
+                        .show_y(true)
+                        .x_axis_formatter(|value, _range, _digits| format!("{}", value as u32))
+                        .y_axis_formatter(|value, _range, _digits| format!("{:.2}", value))
+                        .label_formatter(|name, value| format!("{}: ({:.0}, {:.2})", name, value.x, value.y))
+                        .allow_zoom([true, true])  // Allow zooming on both axes
+                        .allow_drag([true, true])  // Allow dragging on both axes
+                        .show(ui, |plot_ui| {
+                            // Add the line to the plot
+                            plot_ui.line(line);
+
+                            // Add vertical line for current age if available
+                            let current_age = simulator.get_person().age as f64;
+                            plot_ui.vline(VLine::new(current_age).name("Current Age"));
+                        });
+                });
 
                 // Show table of values
                 ui.separator();
