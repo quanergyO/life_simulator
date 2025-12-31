@@ -1,6 +1,16 @@
 use eframe::egui;
 use crate::domain::{Expense, Frequency, LifeSimulator, Person, person::Income};
 
+// Define scaling factors
+const SCALING_FACTORS: [(f32, &str); 6] = [
+    (0.5, "50%"),   // 50%
+    (0.75, "75%"),  // 75%
+    (1.0, "100%"),  // 100%
+    (1.25, "125%"), // 125%
+    (1.5, "150%"),  // 150%
+    (2.0, "200%"),  // 200%
+];
+
 pub struct LifeSimulatorApp {
     simulator: Option<LifeSimulator>,
     name: String,
@@ -18,6 +28,7 @@ pub struct LifeSimulatorApp {
     income_end_age: String,
     target_age: String,
     current_tab: AppTab,
+    current_scale: f32,
 }
 
 #[derive(Default, PartialEq)]
@@ -52,6 +63,7 @@ impl LifeSimulatorApp {
             income_end_age: String::new(),
             target_age: String::new(),
             current_tab: AppTab::default(),
+            current_scale: 1.0, // Default to 100% scale
         }
     }
 
@@ -132,12 +144,25 @@ impl LifeSimulatorApp {
 
 impl eframe::App for LifeSimulatorApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        // Apply scaling
+        ctx.set_zoom_factor(self.current_scale);
+
         egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
             ui.horizontal(|ui| {
                 ui.selectable_value(&mut self.current_tab, AppTab::Setup, "Setup");
                 ui.selectable_value(&mut self.current_tab, AppTab::Expenses, "Expenses");
                 ui.selectable_value(&mut self.current_tab, AppTab::Incomes, "Incomes");
                 ui.selectable_value(&mut self.current_tab, AppTab::Simulation, "Simulation");
+
+                ui.separator();
+
+                // Scaling controls
+                ui.label("Scale:");
+                for (scale_factor, label) in SCALING_FACTORS.iter() {
+                    if ui.selectable_label(self.current_scale == *scale_factor, *label).clicked() {
+                        self.current_scale = *scale_factor;
+                    }
+                }
             });
         });
 
