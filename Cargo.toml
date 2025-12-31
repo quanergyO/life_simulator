@@ -3,4 +3,21 @@ name = "life_simulator"
 version = "0.1.0"
 edition = "2024"
 
+[lib]
+name = "life_simulator"
+path = "src/lib.rs"
+
+[[bin]]
+name = "life_simulator"
+path = "src/main.rs"
+
 [dependencies]
+clap = { version = "4.0", optional = true }
+egui = { version = "0.24", optional = true }
+eframe = { version = "0.24", optional = true }
+egui_plot = { version = "0.24", optional = true }
+
+[features]
+default = ["desktop"]
+cli = ["dep:clap"]
+desktop = ["dep:egui", "dep:eframe", "dep:egui_plot"]
