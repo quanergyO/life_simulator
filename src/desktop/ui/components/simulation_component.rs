@@ -1,5 +1,5 @@
 use eframe::egui;
-use egui_plot::{Line, PlotPoints, Plot, Legend, VLine};
+use egui_plot::{Line, PlotPoints, Plot, Legend};
 use crate::desktop::ui::components::shared_state::SharedState;
 
 pub struct SimulationComponent {
@@ -59,6 +59,42 @@ impl SimulationComponent {
 
                 let line = Line::new(points).name("Balance over time");
 
+                // Calculate cumulative expenses and incomes over time
+                let mut expense_points = Vec::new();
+                let mut income_points = Vec::new();
+
+                for &age in &ages {
+                    // Calculate cumulative expenses at this age
+                    let total_expenses: f64 = simulator.get_person().expenses
+                        .iter()
+                        .filter(|e| e.start_age <= age && (e.end_age.is_none() || e.end_age.unwrap() >= age))
+                        .map(|e| e.amount)
+                        .sum();
+
+                    // Calculate cumulative incomes at this age
+                    let total_incomes: f64 = simulator.get_person().incomes
+                        .iter()
+                        .filter(|i| i.start_age <= age && (i.end_age.is_none() || i.end_age.unwrap() >= age))
+                        .map(|i| i.amount)
+                        .sum();
+
+                    expense_points.push([age as f64, total_expenses]);
+                    income_points.push([age as f64, total_incomes]);
+                }
+
+                let expense_plot_points: PlotPoints = expense_points.into();
+                let income_plot_points: PlotPoints = income_points.into();
+
+                let expense_line = Line::new(expense_plot_points)
+                    .name("Total Expenses")
+                    .color(egui::Color32::RED)
+                    .style(egui_plot::LineStyle::dashed_dense());
+
+                let income_line = Line::new(income_plot_points)
+                    .name("Total Income")
+                    .color(egui::Color32::GREEN)
+                    .style(egui_plot::LineStyle::dashed_dense());
+
                 // Create a scroll area for the plot to allow proper sizing
                 egui::ScrollArea::both().show(ui, |ui| {
                     ui.set_height(400.0); // Set a reasonable default height
@@ -74,12 +110,14 @@ impl SimulationComponent {
                         .allow_zoom([true, true])  // Allow zooming on both axes
                         .allow_drag([true, true])  // Allow dragging on both axes
                         .show(ui, |plot_ui| {
-                            // Add the line to the plot
+                            // Add the main balance line (Capital over time)
                             plot_ui.line(line);
 
-                            // Add vertical line for current age if available
-                            let current_age = simulator.get_person().age as f64;
-                            plot_ui.vline(VLine::new(current_age).name("Current Age"));
+                            // Add the expense line
+                            plot_ui.line(expense_line);
+
+                            // Add the income line
+                            plot_ui.line(income_line);
                         });
                 });
 
