@@ -2,20 +2,16 @@ use eframe::egui;
 use egui_plot::{Line, PlotPoints, Plot, Legend};
 use crate::desktop::ui::components::shared_state::SharedState;
 
-pub struct SimulationComponent {
-    target_age: String,
-}
+pub struct SimulationComponent;
 
 impl SimulationComponent {
     pub fn new() -> Self {
-        Self {
-            target_age: String::new(),
-        }
+        Self
     }
 
     pub fn calculate_balance(&mut self, state: &mut SharedState) -> Option<f64> {
-        if let (Some(ref mut simulator), Ok(target_age_val)) = (state.simulator.as_mut(), self.target_age.parse::<u32>()) {
-            Some(simulator.calculate_balance_at_age(target_age_val))
+        if let Some(ref mut simulator) = state.simulator.as_mut() {
+            Some(simulator.calculate_balance_at_age(100))
         } else {
             None
         }
@@ -29,14 +25,10 @@ impl SimulationComponent {
             return;
         }
 
-        ui.horizontal(|ui| {
-            ui.label("Target Age:");
-            ui.text_edit_singleline(&mut self.target_age);
-        });
-
-        if ui.button("Calculate Balance").clicked() {
+        // Calculate balance automatically when simulator exists
+        if ui.button("Calculate").clicked() {
             if let Some(balance) = self.calculate_balance(state) {
-                ui.label(format!("Projected balance: {:.2}", balance));
+                ui.label(format!("Projected balance at age 100: {:.2}", balance));
             }
         }
 
@@ -59,27 +51,41 @@ impl SimulationComponent {
 
                 let line = Line::new(points).name("Balance over time");
 
-                // Calculate cumulative expenses and incomes over time
+                // Calculate actual expenses and incomes over time (considering frequency)
                 let mut expense_points = Vec::new();
                 let mut income_points = Vec::new();
 
                 for &age in &ages {
-                    // Calculate cumulative expenses at this age
-                    let total_expenses: f64 = simulator.get_person().expenses
+                    // Calculate actual yearly expenses at this age
+                    let total_yearly_expenses: f64 = simulator.get_person().expenses
                         .iter()
                         .filter(|e| e.start_age <= age && (e.end_age.is_none() || e.end_age.unwrap() >= age))
-                        .map(|e| e.amount)
+                        .map(|e| {
+                            // Convert to yearly amount based on frequency
+                            match e.frequency {
+                                crate::domain::Frequency::Yearly => e.amount,
+                                crate::domain::Frequency::Monthly => e.amount * 12.0,
+                                crate::domain::Frequency::Daily => e.amount * 365.0,
+                            }
+                        })
                         .sum();
 
-                    // Calculate cumulative incomes at this age
-                    let total_incomes: f64 = simulator.get_person().incomes
+                    // Calculate actual yearly incomes at this age
+                    let total_yearly_incomes: f64 = simulator.get_person().incomes
                         .iter()
                         .filter(|i| i.start_age <= age && (i.end_age.is_none() || i.end_age.unwrap() >= age))
-                        .map(|i| i.amount)
+                        .map(|i| {
+                            // Convert to yearly amount based on frequency
+                            match i.frequency {
+                                crate::domain::Frequency::Yearly => i.amount,
+                                crate::domain::Frequency::Monthly => i.amount * 12.0,
+                                crate::domain::Frequency::Daily => i.amount * 365.0,
+                            }
+                        })
                         .sum();
 
-                    expense_points.push([age as f64, total_expenses]);
-                    income_points.push([age as f64, total_incomes]);
+                    expense_points.push([age as f64, total_yearly_expenses]);
+                    income_points.push([age as f64, total_yearly_incomes]);
                 }
 
                 let expense_plot_points: PlotPoints = expense_points.into();
@@ -119,21 +125,6 @@ impl SimulationComponent {
                             // Add the income line
                             plot_ui.line(income_line);
                         });
-                });
-
-                // Show table of values
-                ui.separator();
-                egui::ScrollArea::vertical().show(ui, |ui| {
-                    ui.columns(2, |columns| {
-                        columns[0].label("Age");
-                        columns[1].label("Balance");
-
-                        for age in &ages {
-                            let balance = history.get(age).unwrap();
-                            columns[0].label(age.to_string());
-                            columns[1].label(format!("{:.2}", balance));
-                        }
-                    });
                 });
             } else {
                 ui.label("No balance history yet. Calculate some balances first.");

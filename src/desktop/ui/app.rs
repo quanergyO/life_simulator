@@ -4,6 +4,7 @@ use crate::desktop::ui::components::{
     expenses_component::ExpensesComponent,
     incomes_component::IncomesComponent,
     simulation_component::SimulationComponent,
+    analytics_component::AnalyticsComponent,
     settings_component::SettingsComponent,
     shared_state::{SharedState, AppTab},
 };
@@ -14,6 +15,7 @@ pub struct LifeSimulatorApp {
     expenses_component: ExpensesComponent,
     incomes_component: IncomesComponent,
     simulation_component: SimulationComponent,
+    analytics_component: AnalyticsComponent,
     settings_component: SettingsComponent,
 }
 
@@ -32,6 +34,7 @@ impl LifeSimulatorApp {
             expenses_component: ExpensesComponent::new(),
             incomes_component: IncomesComponent::new(),
             simulation_component: SimulationComponent::new(),
+            analytics_component: AnalyticsComponent::new(),
             settings_component,
         }
     }
@@ -48,6 +51,11 @@ impl eframe::App for LifeSimulatorApp {
                 ui.selectable_value(&mut self.state.current_tab, AppTab::Expenses, "Expenses");
                 ui.selectable_value(&mut self.state.current_tab, AppTab::Incomes, "Incomes");
                 ui.selectable_value(&mut self.state.current_tab, AppTab::Simulation, "Simulation");
+
+                // Only show Analytics tab if simulator has data
+                if self.state.simulator.is_some() && !self.state.simulator.as_ref().unwrap().get_balance_history().is_empty() {
+                    ui.selectable_value(&mut self.state.current_tab, AppTab::Analytics, "Analytics");
+                }
 
                 ui.separator();
 
@@ -71,6 +79,9 @@ impl eframe::App for LifeSimulatorApp {
                 },
                 AppTab::Simulation => {
                     self.simulation_component.show(ui, &mut self.state);
+                },
+                AppTab::Analytics => {
+                    self.analytics_component.show(ui, &mut self.state);
                 }
             }
         });

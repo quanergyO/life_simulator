@@ -7,6 +7,7 @@ pub enum AppTab {
     Expenses,
     Incomes,
     Simulation,
+    Analytics,
 }
 
 #[derive(Default)]
