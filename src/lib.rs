@@ -6,7 +6,7 @@ pub mod desktop;
 
 #[cfg(test)]
 mod tests {
-    use crate::domain::{Person, Expense, ExpenseFrequency, LifeSimulator};
+    use crate::domain::{Person, Expense, Frequency, LifeSimulator};
 
     #[test]
     fn test_life_simulator_basic_functionality() {
@@ -18,7 +18,7 @@ mod tests {
         let rent_expense = Expense::new(
             "Rent".to_string(),
             1000.0,
-            ExpenseFrequency::Monthly,
+            Frequency::Monthly,
             25,
             None,
         );
@@ -41,7 +41,7 @@ mod tests {
         let car_payment = Expense::new(
             "Car Payment".to_string(),
             300.0,
-            ExpenseFrequency::Monthly,
+            Frequency::Monthly,
             30,
             Some(40),
         );
@@ -64,7 +64,7 @@ mod tests {
         let rent = Expense::new(
             "Rent".to_string(),
             800.0,
-            ExpenseFrequency::Monthly,
+            Frequency::Monthly,
             20,
             None,
         );
@@ -73,7 +73,7 @@ mod tests {
         let food = Expense::new(
             "Food".to_string(),
             300.0,
-            ExpenseFrequency::Monthly,
+            Frequency::Monthly,
             20,
             None,
         );
@@ -96,7 +96,7 @@ mod tests {
         let coffee = Expense::new(
             "Coffee".to_string(),
             5.0,
-            ExpenseFrequency::Daily,
+            Frequency::Daily,
             22,
             None,
         );

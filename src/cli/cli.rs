@@ -51,7 +51,7 @@ impl Cli {
         println!("\n--- Current Status ---");
         println!("Name: {}", person.name);
         println!("Age: {}", person.age);
-        println!("Current Income: ${:.2}", person.current_income);
+        println!("Current Income: ${:.2}", person.capital);
         println!("Current Balance: ${:.2}", person.get_current_balance());
         println!("Number of Expenses: {}", person.expenses.len());
     }
@@ -70,9 +70,9 @@ impl Cli {
 
         let freq_choice = self.get_user_input().trim().parse::<u32>().unwrap_or(1);
         let frequency = match freq_choice {
-            2 => crate::domain::ExpenseFrequency::Monthly,
-            3 => crate::domain::ExpenseFrequency::Daily,
-            _ => crate::domain::ExpenseFrequency::Yearly,
+            2 => crate::domain::Frequency::Monthly,
+            3 => crate::domain::Frequency::Daily,
+            _ => crate::domain::Frequency::Yearly,
         };
 
         let start_age = Self::get_input("Start age for this expense: ").parse::<u32>().expect("Invalid age");
