@@ -26,7 +26,7 @@ pub struct SettingsComponent {
 impl SettingsComponent {
     pub fn new() -> Self {
         Self {
-            current_scale: 1.0, // Default to 100% scale
+            current_scale: 1.0,         // Default to 100% scale
             current_theme: Theme::Dark, // Default to dark theme
             is_open: false,
         }
@@ -46,7 +46,7 @@ impl SettingsComponent {
 
     pub fn set_theme(&mut self, theme: Theme, ctx: &egui::Context) {
         self.current_theme = theme.clone();
-        
+
         match theme {
             Theme::Dark => ctx.set_visuals(egui::Visuals::dark()),
             Theme::Light => ctx.set_visuals(egui::Visuals::light()),
@@ -77,7 +77,10 @@ impl SettingsComponent {
                 ui.horizontal(|ui| {
                     ui.label("Scale:");
                     for (scale_factor, label) in SCALING_FACTORS.iter() {
-                        if ui.selectable_label(self.current_scale == *scale_factor, *label).clicked() {
+                        if ui
+                            .selectable_label(self.current_scale == *scale_factor, *label)
+                            .clicked()
+                        {
                             self.current_scale = *scale_factor;
                         }
                     }

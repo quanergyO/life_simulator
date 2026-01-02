@@ -1,6 +1,6 @@
-use eframe::egui;
-use egui_plot::{Line, PlotPoints, Plot, Legend};
 use crate::desktop::ui::components::shared_state::SharedState;
+use eframe::egui;
+use egui_plot::{Legend, Line, Plot, PlotPoints};
 
 pub struct SimulationComponent;
 
@@ -44,9 +44,7 @@ impl SimulationComponent {
 
                 let points: PlotPoints = ages
                     .iter()
-                    .map(|&age| {
-                        [age as f64, *history.get(&age).unwrap_or(&0.0)]
-                    })
+                    .map(|&age| [age as f64, *history.get(&age).unwrap_or(&0.0)])
                     .collect();
 
                 let line = Line::new(points).name("Balance over time");
@@ -57,9 +55,13 @@ impl SimulationComponent {
 
                 for &age in &ages {
                     // Calculate actual yearly expenses at this age
-                    let total_yearly_expenses: f64 = simulator.get_person().expenses
+                    let total_yearly_expenses: f64 = simulator
+                        .get_person()
+                        .expenses
                         .iter()
-                        .filter(|e| e.start_age <= age && (e.end_age.is_none() || e.end_age.unwrap() >= age))
+                        .filter(|e| {
+                            e.start_age <= age && (e.end_age.is_none() || e.end_age.unwrap() >= age)
+                        })
                         .map(|e| {
                             // Convert to yearly amount based on frequency
                             match e.frequency {
@@ -71,9 +73,13 @@ impl SimulationComponent {
                         .sum();
 
                     // Calculate actual yearly incomes at this age
-                    let total_yearly_incomes: f64 = simulator.get_person().incomes
+                    let total_yearly_incomes: f64 = simulator
+                        .get_person()
+                        .incomes
                         .iter()
-                        .filter(|i| i.start_age <= age && (i.end_age.is_none() || i.end_age.unwrap() >= age))
+                        .filter(|i| {
+                            i.start_age <= age && (i.end_age.is_none() || i.end_age.unwrap() >= age)
+                        })
                         .map(|i| {
                             // Convert to yearly amount based on frequency
                             match i.frequency {
@@ -107,14 +113,16 @@ impl SimulationComponent {
 
                     Plot::new("balance_plot")
                         .legend(Legend::default())
-                        .view_aspect(3.0)  // Wider aspect ratio
+                        .view_aspect(3.0) // Wider aspect ratio
                         .show_x(true)
                         .show_y(true)
                         .x_axis_formatter(|value, _range, _digits| format!("{}", value as u32))
                         .y_axis_formatter(|value, _range, _digits| format!("{:.2}", value))
-                        .label_formatter(|name, value| format!("{}: ({:.0}, {:.2})", name, value.x, value.y))
-                        .allow_zoom([true, true])  // Allow zooming on both axes
-                        .allow_drag([true, true])  // Allow dragging on both axes
+                        .label_formatter(|name, value| {
+                            format!("{}: ({:.0}, {:.2})", name, value.x, value.y)
+                        })
+                        .allow_zoom([true, true]) // Allow zooming on both axes
+                        .allow_drag([true, true]) // Allow dragging on both axes
                         .show(ui, |plot_ui| {
                             // Add the main balance line (Capital over time)
                             plot_ui.line(line);

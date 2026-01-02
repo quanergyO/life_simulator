@@ -1,4 +1,7 @@
-use crate::domain::{entities::person::{Expense, Frequency, Person}, person::Income};
+use crate::domain::{
+    entities::person::{Expense, Frequency, Person},
+    person::Income,
+};
 
 pub struct LifeSimulator {
     person: Person,
@@ -49,7 +52,9 @@ impl LifeSimulator {
                 current_age += 1;
 
                 // Store intermediate balances for efficiency
-                self.person.balance_history.insert(current_age, current_balance);
+                self.person
+                    .balance_history
+                    .insert(current_age, current_balance);
             }
         } else {
             // Calculate backward in time (simplified - in a real app, this would require more complex logic)

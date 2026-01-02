@@ -10,8 +10,12 @@ impl Cli {
         println!("Let's create your character.");
 
         let name = Self::get_input("Enter your name: ");
-        let age = Self::get_input("Enter your current age: ").parse::<u32>().expect("Invalid age");
-        let income = Self::get_input("Enter your current annual income: ").parse::<f64>().expect("Invalid income");
+        let age = Self::get_input("Enter your current age: ")
+            .parse::<u32>()
+            .expect("Invalid age");
+        let income = Self::get_input("Enter your current annual income: ")
+            .parse::<f64>()
+            .expect("Invalid income");
 
         let person = crate::domain::Person::new(name, age, income);
         let simulator = crate::domain::LifeSimulator::new(person);
@@ -40,7 +44,7 @@ impl Cli {
                 5 => {
                     println!("Thanks for using Life Simulator!");
                     break;
-                },
+                }
                 _ => println!("Invalid option. Please try again."),
             }
         }
@@ -59,7 +63,9 @@ impl Cli {
     fn add_expense(&mut self) {
         println!("\n--- Add Expense ---");
         let name = Self::get_input("Expense name: ");
-        let amount = Self::get_input("Amount per period: ").parse::<f64>().expect("Invalid amount");
+        let amount = Self::get_input("Amount per period: ")
+            .parse::<f64>()
+            .expect("Invalid amount");
 
         println!("Select frequency:");
         println!("1. Yearly");
@@ -75,7 +81,9 @@ impl Cli {
             _ => crate::domain::Frequency::Yearly,
         };
 
-        let start_age = Self::get_input("Start age for this expense: ").parse::<u32>().expect("Invalid age");
+        let start_age = Self::get_input("Start age for this expense: ")
+            .parse::<u32>()
+            .expect("Invalid age");
         let end_input = Self::get_input("End age for this expense (leave empty for ongoing): ");
         let end_age = if end_input.trim().is_empty() {
             None
@@ -116,7 +124,9 @@ impl Cli {
 
     fn get_user_input(&self) -> String {
         let mut input = String::new();
-        io::stdin().read_line(&mut input).expect("Failed to read line");
+        io::stdin()
+            .read_line(&mut input)
+            .expect("Failed to read line");
         input
     }
 
@@ -125,7 +135,9 @@ impl Cli {
         io::stdout().flush().unwrap();
 
         let mut input = String::new();
-        io::stdin().read_line(&mut input).expect("Failed to read line");
+        io::stdin()
+            .read_line(&mut input)
+            .expect("Failed to read line");
         input.trim().to_string()
     }
 }

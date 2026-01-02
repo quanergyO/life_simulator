@@ -1,13 +1,13 @@
-use eframe::egui;
 use crate::desktop::ui::components::{
-    setup_component::SetupComponent,
+    analytics_component::AnalyticsComponent,
     expenses_component::ExpensesComponent,
     incomes_component::IncomesComponent,
-    simulation_component::SimulationComponent,
-    analytics_component::AnalyticsComponent,
     settings_component::SettingsComponent,
-    shared_state::{SharedState, AppTab},
+    setup_component::SetupComponent,
+    shared_state::{AppTab, SharedState},
+    simulation_component::SimulationComponent,
 };
+use eframe::egui;
 
 pub struct LifeSimulatorApp {
     state: SharedState,
@@ -50,11 +50,27 @@ impl eframe::App for LifeSimulatorApp {
                 ui.selectable_value(&mut self.state.current_tab, AppTab::Setup, "Setup");
                 ui.selectable_value(&mut self.state.current_tab, AppTab::Expenses, "Expenses");
                 ui.selectable_value(&mut self.state.current_tab, AppTab::Incomes, "Incomes");
-                ui.selectable_value(&mut self.state.current_tab, AppTab::Simulation, "Simulation");
+                ui.selectable_value(
+                    &mut self.state.current_tab,
+                    AppTab::Simulation,
+                    "Simulation",
+                );
 
                 // Only show Analytics tab if simulator has data
-                if self.state.simulator.is_some() && !self.state.simulator.as_ref().unwrap().get_balance_history().is_empty() {
-                    ui.selectable_value(&mut self.state.current_tab, AppTab::Analytics, "Analytics");
+                if self.state.simulator.is_some()
+                    && !self
+                        .state
+                        .simulator
+                        .as_ref()
+                        .unwrap()
+                        .get_balance_history()
+                        .is_empty()
+                {
+                    ui.selectable_value(
+                        &mut self.state.current_tab,
+                        AppTab::Analytics,
+                        "Analytics",
+                    );
                 }
 
                 ui.separator();
@@ -66,23 +82,21 @@ impl eframe::App for LifeSimulatorApp {
             });
         });
 
-        egui::CentralPanel::default().show(ctx, |ui| {
-            match &self.state.current_tab {
-                AppTab::Setup => {
-                    self.setup_component.show(ui, &mut self.state);
-                },
-                AppTab::Expenses => {
-                    self.expenses_component.show(ui, &mut self.state);
-                },
-                AppTab::Incomes => {
-                    self.incomes_component.show(ui, &mut self.state);
-                },
-                AppTab::Simulation => {
-                    self.simulation_component.show(ui, &mut self.state);
-                },
-                AppTab::Analytics => {
-                    self.analytics_component.show(ui, &mut self.state);
-                }
+        egui::CentralPanel::default().show(ctx, |ui| match &self.state.current_tab {
+            AppTab::Setup => {
+                self.setup_component.show(ui, &mut self.state);
+            }
+            AppTab::Expenses => {
+                self.expenses_component.show(ui, &mut self.state);
+            }
+            AppTab::Incomes => {
+                self.incomes_component.show(ui, &mut self.state);
+            }
+            AppTab::Simulation => {
+                self.simulation_component.show(ui, &mut self.state);
+            }
+            AppTab::Analytics => {
+                self.analytics_component.show(ui, &mut self.state);
             }
         });
     }
@@ -90,14 +104,14 @@ impl eframe::App for LifeSimulatorApp {
 
 pub fn run_gui() {
     let options = eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default()
-            .with_inner_size(egui::Vec2::new(1600.0, 900.0)),
+        viewport: egui::ViewportBuilder::default().with_inner_size(egui::Vec2::new(1600.0, 900.0)),
         ..Default::default()
     };
-    
+
     eframe::run_native(
         "Life Simulator",
         options,
         Box::new(|cc| Box::new(LifeSimulatorApp::new(cc))),
-    ).expect("Failed to run application");
+    )
+    .expect("Failed to run application");
 }

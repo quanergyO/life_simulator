@@ -1,6 +1,6 @@
-use eframe::egui;
-use crate::domain::{person::Income, Frequency};
 use crate::desktop::ui::components::shared_state::SharedState;
+use crate::domain::{Frequency, person::Income};
+use eframe::egui;
 
 pub struct IncomesComponent {
     income_name: String,
@@ -23,9 +23,10 @@ impl IncomesComponent {
 
     pub fn add_income(&mut self, state: &mut SharedState) {
         if let Some(ref mut simulator) = state.simulator {
-            if let (Ok(amount_val), Ok(start_age_val)) =
-            (self.income_amount.parse::<f64>(), self.income_start_age.parse::<u32>()) {
-
+            if let (Ok(amount_val), Ok(start_age_val)) = (
+                self.income_amount.parse::<f64>(),
+                self.income_start_age.parse::<u32>(),
+            ) {
                 let end_age = if !self.income_end_age.is_empty() {
                     self.income_end_age.parse::<u32>().ok()
                 } else {
@@ -93,13 +94,17 @@ impl IncomesComponent {
             ui.separator();
             ui.heading("Current Incomes:");
             for (i, income) in simulator.get_person().incomes.iter().enumerate() {
-                ui.label(format!("{}. {}: {:.2} ({:?}) - Age {} to {}",
-                               i + 1,
-                               income.name,
-                               income.amount,
-                               income.frequency,
-                               income.start_age,
-                               income.end_age.map_or("ongoing".to_string(), |age| age.to_string())));
+                ui.label(format!(
+                    "{}. {}: {:.2} ({:?}) - Age {} to {}",
+                    i + 1,
+                    income.name,
+                    income.amount,
+                    income.frequency,
+                    income.start_age,
+                    income
+                        .end_age
+                        .map_or("ongoing".to_string(), |age| age.to_string())
+                ));
             }
         }
     }

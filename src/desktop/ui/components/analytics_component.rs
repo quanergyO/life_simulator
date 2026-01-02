@@ -1,5 +1,5 @@
-use eframe::egui;
 use crate::desktop::ui::components::shared_state::SharedState;
+use eframe::egui;
 
 pub struct AnalyticsComponent;
 
@@ -42,9 +42,13 @@ impl AnalyticsComponent {
                 let balance = history.get(age).unwrap_or(&0.0);
 
                 // Calculate total expenses and income for this age (considering frequency)
-                let total_expenses: f64 = simulator.get_person().expenses
+                let total_expenses: f64 = simulator
+                    .get_person()
+                    .expenses
                     .iter()
-                    .filter(|e| e.start_age <= *age && (e.end_age.is_none() || e.end_age.unwrap() >= *age))
+                    .filter(|e| {
+                        e.start_age <= *age && (e.end_age.is_none() || e.end_age.unwrap() >= *age)
+                    })
                     .map(|e| {
                         // Convert to yearly amount based on frequency
                         match e.frequency {
@@ -55,9 +59,13 @@ impl AnalyticsComponent {
                     })
                     .sum();
 
-                let total_incomes: f64 = simulator.get_person().incomes
+                let total_incomes: f64 = simulator
+                    .get_person()
+                    .incomes
                     .iter()
-                    .filter(|i| i.start_age <= *age && (i.end_age.is_none() || i.end_age.unwrap() >= *age))
+                    .filter(|i| {
+                        i.start_age <= *age && (i.end_age.is_none() || i.end_age.unwrap() >= *age)
+                    })
                     .map(|i| {
                         // Convert to yearly amount based on frequency
                         match i.frequency {

@@ -1,6 +1,6 @@
-use eframe::egui;
-use crate::domain::{Expense, Frequency};
 use crate::desktop::ui::components::shared_state::SharedState;
+use crate::domain::{Expense, Frequency};
+use eframe::egui;
 
 pub struct ExpensesComponent {
     expense_name: String,
@@ -23,9 +23,10 @@ impl ExpensesComponent {
 
     pub fn add_expense(&mut self, state: &mut SharedState) {
         if let Some(ref mut simulator) = state.simulator {
-            if let (Ok(amount_val), Ok(start_age_val)) =
-                (self.expense_amount.parse::<f64>(), self.expense_start_age.parse::<u32>()) {
-
+            if let (Ok(amount_val), Ok(start_age_val)) = (
+                self.expense_amount.parse::<f64>(),
+                self.expense_start_age.parse::<u32>(),
+            ) {
                 let end_age = if !self.expense_end_age.is_empty() {
                     self.expense_end_age.parse::<u32>().ok()
                 } else {
@@ -95,13 +96,17 @@ impl ExpensesComponent {
             ui.separator();
             ui.heading("Current Expenses:");
             for (i, expense) in simulator.get_person().expenses.iter().enumerate() {
-                ui.label(format!("{}. {}: {:.2} ({:?}) - Age {} to {}",
-                               i + 1,
-                               expense.name,
-                               expense.amount,
-                               expense.frequency,
-                               expense.start_age,
-                               expense.end_age.map_or("ongoing".to_string(), |age| age.to_string())));
+                ui.label(format!(
+                    "{}. {}: {:.2} ({:?}) - Age {} to {}",
+                    i + 1,
+                    expense.name,
+                    expense.amount,
+                    expense.frequency,
+                    expense.start_age,
+                    expense
+                        .end_age
+                        .map_or("ongoing".to_string(), |age| age.to_string())
+                ));
             }
         }
     }

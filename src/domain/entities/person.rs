@@ -20,7 +20,7 @@ impl Person {
             incomes: Vec::new(),
             balance_history: HashMap::new(),
         };
-        
+
         // Initialize balance at current age
         person.balance_history.insert(age, capital);
         person
@@ -57,7 +57,13 @@ pub struct Expense {
 }
 
 impl Expense {
-    pub fn new(name: String, amount: f64, frequency: Frequency, start_age: u32, end_age: Option<u32>) -> Self {
+    pub fn new(
+        name: String,
+        amount: f64,
+        frequency: Frequency,
+        start_age: u32,
+        end_age: Option<u32>,
+    ) -> Self {
         Expense {
             name,
             amount,
@@ -78,7 +84,13 @@ pub struct Income {
 }
 
 impl Income {
-    pub fn new(name: String, amount: f64, frequency: Frequency, start_age: u32, end_age: Option<u32>) -> Self {
+    pub fn new(
+        name: String,
+        amount: f64,
+        frequency: Frequency,
+        start_age: u32,
+        end_age: Option<u32>,
+    ) -> Self {
         Income {
             name,
             amount,

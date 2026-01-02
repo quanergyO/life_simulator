@@ -1,12 +1,12 @@
-pub mod domain;
 pub mod cli;
+pub mod domain;
 
 #[cfg(feature = "desktop")]
 pub mod desktop;
 
 #[cfg(test)]
 mod tests {
-    use crate::domain::{Person, Expense, Frequency, LifeSimulator};
+    use crate::domain::{Expense, Frequency, LifeSimulator, Person};
 
     #[test]
     fn test_life_simulator_basic_functionality() {
@@ -15,13 +15,7 @@ mod tests {
         let mut simulator = LifeSimulator::new(person);
 
         // Add an expense
-        let rent_expense = Expense::new(
-            "Rent".to_string(),
-            1000.0,
-            Frequency::Monthly,
-            25,
-            None,
-        );
+        let rent_expense = Expense::new("Rent".to_string(), 1000.0, Frequency::Monthly, 25, None);
         simulator.add_expense(rent_expense);
 
         // Calculate balance at age 30
@@ -61,22 +55,10 @@ mod tests {
         let mut simulator = LifeSimulator::new(person);
 
         // Add multiple expenses
-        let rent = Expense::new(
-            "Rent".to_string(),
-            800.0,
-            Frequency::Monthly,
-            20,
-            None,
-        );
+        let rent = Expense::new("Rent".to_string(), 800.0, Frequency::Monthly, 20, None);
         simulator.add_expense(rent);
 
-        let food = Expense::new(
-            "Food".to_string(),
-            300.0,
-            Frequency::Monthly,
-            20,
-            None,
-        );
+        let food = Expense::new("Food".to_string(), 300.0, Frequency::Monthly, 20, None);
         simulator.add_expense(food);
 
         // Calculate balance at age 25
@@ -93,13 +75,7 @@ mod tests {
         let mut simulator = LifeSimulator::new(person);
 
         // Add a daily expense
-        let coffee = Expense::new(
-            "Coffee".to_string(),
-            5.0,
-            Frequency::Daily,
-            22,
-            None,
-        );
+        let coffee = Expense::new("Coffee".to_string(), 5.0, Frequency::Daily, 22, None);
         simulator.add_expense(coffee);
 
         // Calculate balance at age 23 (1 year)

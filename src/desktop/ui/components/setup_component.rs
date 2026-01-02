@@ -1,6 +1,6 @@
-use eframe::egui;
-use crate::domain::{LifeSimulator, Person};
 use crate::desktop::ui::components::shared_state::SharedState;
+use crate::domain::{LifeSimulator, Person};
+use eframe::egui;
 
 pub struct SetupComponent {
     name: String,
@@ -18,7 +18,9 @@ impl SetupComponent {
     }
 
     pub fn create_person(&mut self, state: &mut SharedState) {
-        if let (Ok(age_val), Ok(income_val)) = (self.age.parse::<u32>(), self.start_capital.parse::<f64>()) {
+        if let (Ok(age_val), Ok(income_val)) =
+            (self.age.parse::<u32>(), self.start_capital.parse::<f64>())
+        {
             let person = Person::new(self.name.clone(), age_val, income_val);
             state.simulator = Some(LifeSimulator::new(person));
         }
@@ -49,9 +51,14 @@ impl SetupComponent {
         if let Some(simulator) = &state.simulator {
             let person = simulator.get_person();
             ui.separator();
-            ui.label(format!("Current Person: {}, Age: {}, Capital: {:.2}",
-                             person.name, person.age, person.capital));
-            ui.label(format!("Current Balance: {:.2}", person.get_current_balance()));
+            ui.label(format!(
+                "Current Person: {}, Age: {}, Capital: {:.2}",
+                person.name, person.age, person.capital
+            ));
+            ui.label(format!(
+                "Current Balance: {:.2}",
+                person.get_current_balance()
+            ));
         }
     }
 }
